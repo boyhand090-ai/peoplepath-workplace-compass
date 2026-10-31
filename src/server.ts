@@ -175,10 +175,31 @@ function jsonResponse(data: unknown, status = 200, extraHeaders: Record<string, 
   });
 }
 
+async function verifyRecaptcha(token: string, ip: string): Promise<boolean> {
+  const secret = process.env.RECAPTCHA_SECRET_KEY;
+  if (!secret || !token) return false;
+  try {
+    const res = await fetch("https://www.google.com/recaptcha/api/siteverify", {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ secret, response: token, remoteip: ip }),
+    });
+    const data = (await res.json()) as { success?: boolean };
+    return data.success === true;
+  } catch {
+    return false;
+  }
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown): Promise<Response> {
     const url = new URL(request.url);
     const clientIp = getClientIp(request);
+
+    // Public reCAPTCHA site key for the admin sign-in page
+    if (url.pathname === "/api/admin/recaptcha-config" && request.method === "GET") {
+      return jsonResponse({ siteKey: process.env.RECAPTCHA_SITE_KEY || "" });
+    }
 
     // -------------------------------------------------------------
     // API: Admin Authentication Endpoint (/api/admin/auth)
@@ -218,7 +239,22 @@ export default {
         }
 
         try {
-          const body = (await request.json()) as { username?: string; password?: string };
+          const body = (await request.json()) as {
+            username?: string;
+            password?: string;
+            recaptchaToken?: string;
+          };
+          const captchaOk = await verifyRecaptcha(
+            typeof body?.recaptchaToken === "string" ? body.recaptchaToken : "",
+            clientIp,
+          );
+          if (!captchaOk) {
+            return jsonResponse(
+              { error: "Please complete the \"I'm not a robot\" check and try again." },
+              400,
+              corsHeaders,
+            );
+          }
           const userStr = typeof body?.username === "string" ? body.username.trim() : "";
           const passStr = typeof body?.password === "string" ? body.password.trim() : "";
 

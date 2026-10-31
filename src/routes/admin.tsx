@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect, useMemo, useCallback, type FormEvent } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef, type FormEvent } from "react";
 import {
   Lock,
   User,
@@ -51,6 +51,7 @@ import {
   type ClientInquiry,
 } from "@/lib/inbox";
 import { cn } from "@/lib/utils";
+import { Recaptcha, type RecaptchaHandle } from "@/components/admin/recaptcha";
 import { filterAndSortInquiries } from "@/lib/inquiry-filters";
 
 const title = "Client Inquiries Admin Portal — six2eight";
@@ -76,6 +77,8 @@ function AdminPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState("");
+  const recaptchaRef = useRef<RecaptchaHandle>(null);
 
   // Inquiries data state
   const [inquiries, setInquiries] = useState<ClientInquiry[]>([]);
@@ -160,10 +163,14 @@ function AdminPage() {
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoginError("");
+    if (!recaptchaToken) {
+      setLoginError("Please tick \"I'm not a robot\" before signing in.");
+      return;
+    }
     setIsLoggingIn(true);
 
     try {
-      const result = await authenticateAdmin(usernameInput, passwordInput);
+      const result = await authenticateAdmin(usernameInput, passwordInput, recaptchaToken);
       if (result.success) {
         setIsAuthenticated(true);
         toast.success(`Welcome back, ${usernameInput.trim()}`);
@@ -179,6 +186,8 @@ function AdminPage() {
       toast.error("Authentication failed.");
     } finally {
       setIsLoggingIn(false);
+      setRecaptchaToken("");
+      recaptchaRef.current?.reset();
     }
   };
 
@@ -411,6 +420,10 @@ function AdminPage() {
                   {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                 </button>
               </div>
+            </div>
+
+            <div className="flex justify-center pt-1">
+              <Recaptcha ref={recaptchaRef} onChange={setRecaptchaToken} />
             </div>
 
             <button

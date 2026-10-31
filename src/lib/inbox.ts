@@ -67,35 +67,24 @@ export function setAdminToken(token: string | null): void {
 export async function authenticateAdmin(
   username: string,
   password: string,
+  recaptchaToken: string,
 ): Promise<{ success: boolean; token?: string; error?: string }> {
   try {
     const res = await fetch("/api/admin/auth", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, recaptchaToken }),
     });
-
     const data = await res.json();
     if (res.ok && data?.success && data?.token) {
       setAdminToken(data.token);
       return { success: true, token: data.token };
     }
-
     return { success: false, error: data?.error || "Authentication failed." };
-  } catch (err) {
-    console.warn("Server auth unreachable; falling back to offline verify", err);
-    // Offline resilience fallback
-    const isValidUser =
-      username.trim() === "sixtoeight@talha" ||
-      username.trim() === "sixtoeight" ||
-      username.trim() === "ozyrah@talha";
-    if (isValidUser && password.trim() === "madebyAI") {
-      const fallbackToken = `offline-${Date.now()}`;
-      setAdminToken(fallbackToken);
-      return { success: true, token: fallbackToken };
-    }
-    return { success: false, error: "Authentication failed. Check credentials." };
+  } catch {
+    return { success: false, error: "Could not reach the server. Please try again." };
   }
+}
 }
 
 /**
