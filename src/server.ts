@@ -177,6 +177,7 @@ function jsonResponse(data: unknown, status = 200, extraHeaders: Record<string, 
 
 async function verifyRecaptcha(token: string, ip: string): Promise<boolean> {
   const secret = process.env.RECAPTCHA_SECRET_KEY;
+  (globalThis as Record<string, unknown>).__rcDebug = { hasSecret: !!secret, tokenLen: token.length };
   if (!secret || !token) return false;
   try {
     const res = await fetch("https://www.google.com/recaptcha/api/siteverify", {
@@ -193,7 +194,8 @@ async function verifyRecaptcha(token: string, ip: string): Promise<boolean> {
     if (!(data.success && (data.score ?? 0) >= 0.5)) (globalThis as Record<string, unknown>).__rcDebug = data;
     // v3: require a human-like score and the expected action
     return data.success === true && (data.score ?? 0) >= 0.5 && data.action === "admin_login";
-  } catch {
+  } catch (e) {
+    (globalThis as Record<string, unknown>).__rcDebug = String(e);
     return false;
   }
 }
