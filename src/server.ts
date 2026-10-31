@@ -184,7 +184,13 @@ async function verifyRecaptcha(token: string, ip: string): Promise<boolean> {
       headers: { "content-type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({ secret, response: token, remoteip: ip }),
     });
-    const data = (await res.json()) as { success?: boolean; score?: number; action?: string };
+    const data = (await res.json()) as {
+      success?: boolean;
+      score?: number;
+      action?: string;
+      "error-codes"?: string[];
+    };
+    if (!(data.success && (data.score ?? 0) >= 0.5)) console.warn("recaptcha rejected", JSON.stringify(data));
     // v3: require a human-like score and the expected action
     return data.success === true && (data.score ?? 0) >= 0.5 && data.action === "admin_login";
   } catch {
