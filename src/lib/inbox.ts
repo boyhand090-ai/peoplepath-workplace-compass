@@ -189,19 +189,8 @@ export async function fetchServerInquiries(token?: string | null): Promise<Clien
       const serverData = await res.json();
       if (Array.isArray(serverData)) {
         const cleanedServer = sanitize(serverData);
-        const local = getInquiries();
-        // Merge by unique id
-        const map = new Map<string, ClientInquiry>();
-        for (const item of local) map.set(item.id, item);
-        for (const item of cleanedServer) {
-          const existing = map.get(item.id);
-          // Preserve local status updates and private notes
-          map.set(
-            item.id,
-            existing ? { ...item, status: existing.status, notes: existing.notes } : item,
-          );
-        }
-        const merged = Array.from(map.values()).sort(
+        // The server (Lovable Cloud) is the source of truth for status and notes
+        const merged = cleanedServer.sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         );
 
@@ -274,7 +263,7 @@ export async function saveInquiry(
 }
 
 /**
- * Save private admin notes for an inquiry (stored in this browser)
+ * Save private admin notes for an inquiry (saved to the server)
  */
 export function updateInquiryNotes(id: string, notes: string): ClientInquiry[] {
   const updated = getInquiries().map((item) =>
@@ -284,6 +273,14 @@ export function updateInquiryNotes(id: string, notes: string): ClientInquiry[] {
   if (typeof window !== "undefined") {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     window.dispatchEvent(new CustomEvent("six2eight_inquiry_updated"));
+    const token = getAdminToken();
+    if (token) {
+      void fetch("/api/inquiries", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ id, notes: notes.slice(0, 5000) }),
+      }).catch(() => {});
+    }
   }
   return updated;
 }
