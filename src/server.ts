@@ -184,8 +184,9 @@ async function verifyRecaptcha(token: string, ip: string): Promise<boolean> {
       headers: { "content-type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({ secret, response: token, remoteip: ip }),
     });
-    const data = (await res.json()) as { success?: boolean };
-    return data.success === true;
+    const data = (await res.json()) as { success?: boolean; score?: number; action?: string };
+    // v3: require a human-like score and the expected action
+    return data.success === true && (data.score ?? 0) >= 0.5 && data.action === "admin_login";
   } catch {
     return false;
   }
@@ -250,7 +251,7 @@ export default {
           );
           if (!captchaOk) {
             return jsonResponse(
-              { error: "Please complete the \"I'm not a robot\" check and try again." },
+              { error: "Security check failed. Please refresh the page and try again." },
               400,
               corsHeaders,
             );
