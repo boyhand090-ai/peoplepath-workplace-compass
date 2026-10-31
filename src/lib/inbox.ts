@@ -68,7 +68,7 @@ export async function authenticateAdmin(
   username: string,
   password: string,
   recaptchaToken: string,
-): Promise<{ success: boolean; token?: string; error?: string }> {
+): Promise<{ success: boolean; token?: string; error?: string; code?: string }> {
   try {
     const res = await fetch("/api/admin/auth", {
       method: "POST",
@@ -80,7 +80,7 @@ export async function authenticateAdmin(
       setAdminToken(data.token);
       return { success: true, token: data.token };
     }
-    return { success: false, error: data?.error || "Authentication failed." };
+    return { success: false, error: data?.error || "Authentication failed.", code: data?.code };
   } catch {
     return { success: false, error: "Could not reach the server. Please try again." };
   }
