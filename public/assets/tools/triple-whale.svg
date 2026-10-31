@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <linearGradient id="twGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#05C5FB"/>
+      <stop offset="100%" stop-color="#0055FE"/>
+    </linearGradient>
+  </defs>
+  <rect width="100" height="100" rx="24" fill="#0C1427"/>
+  <g fill="url(#twGrad)">
+    <path d="M46 22c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2s2-.9 2-2v-6c0-1.1-.9-2-2-2zM53 25c-1.1 0-2 .9-2 2v3c0 1.1.9 2 2 2s2-.9 2-2v-3c0-1.1-.9-2-2-2zM39 25c-1.1 0-2 .9-2 2v3c0 1.1.9 2 2 2s2-.9 2-2v-3c0-1.1-.9-2-2-2z"/>
+    <path d="M78 52c-3.5-9-12-16-24-16-16 0-28 10-33 22-2 5-1 10 3 13 4 3 10 3 15 1 5-2 11-4 17-4 7 0 12 3 18 3 5 0 9-3 10-7l4-9c.5-1-.2-2.2-1-2.5l-4-.5c.8-1 1-1.7 1-2.5z"/>
+    <circle cx="34" cy="52" r="3" fill="#FFFFFF"/>
+  </g>
+</svg>

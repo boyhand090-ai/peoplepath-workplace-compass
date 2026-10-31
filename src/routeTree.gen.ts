@@ -10,33 +10,251 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as WorkRouteImport } from './routes/work'
+import { Route as ServicesBrandingIdentityRouteImport } from './routes/services.branding-identity'
+import { Route as ServicesContentMarketingRouteImport } from './routes/services.content-marketing'
+import { Route as ServicesDigitalMarketingRouteImport } from './routes/services.digital-marketing'
+import { Route as ServicesMobileAppDesignRouteImport } from './routes/services.mobile-app-design'
+import { Route as ServicesPaidAdsRouteImport } from './routes/services.paid-ads'
+import { Route as ServicesSeoMarketingRouteImport } from './routes/services.seo-marketing'
+import { Route as ServicesShopifyDevelopmentRouteImport } from './routes/services.shopify-development'
+import { Route as ServicesUiUxDesignRouteImport } from './routes/services.ui-ux-design'
+import { Route as ServicesWebDesignRouteImport } from './routes/services.web-design'
+import { Route as ServicesWebDevelopmentRouteImport } from './routes/services.web-development'
+import { Route as ServicesWebflowDevelopmentRouteImport } from './routes/services.webflow-development'
+import { Route as ServicesWordpressDevelopmentRouteImport } from './routes/services.wordpress-development'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WorkRoute = WorkRouteImport.update({
+  id: '/work',
+  path: '/work',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServicesBrandingIdentityRoute =
+  ServicesBrandingIdentityRouteImport.update({
+    id: '/services/branding-identity',
+    path: '/services/branding-identity',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ServicesContentMarketingRoute =
+  ServicesContentMarketingRouteImport.update({
+    id: '/services/content-marketing',
+    path: '/services/content-marketing',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ServicesDigitalMarketingRoute =
+  ServicesDigitalMarketingRouteImport.update({
+    id: '/services/digital-marketing',
+    path: '/services/digital-marketing',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ServicesMobileAppDesignRoute = ServicesMobileAppDesignRouteImport.update({
+  id: '/services/mobile-app-design',
+  path: '/services/mobile-app-design',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServicesPaidAdsRoute = ServicesPaidAdsRouteImport.update({
+  id: '/services/paid-ads',
+  path: '/services/paid-ads',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServicesSeoMarketingRoute = ServicesSeoMarketingRouteImport.update({
+  id: '/services/seo-marketing',
+  path: '/services/seo-marketing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServicesShopifyDevelopmentRoute =
+  ServicesShopifyDevelopmentRouteImport.update({
+    id: '/services/shopify-development',
+    path: '/services/shopify-development',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ServicesUiUxDesignRoute = ServicesUiUxDesignRouteImport.update({
+  id: '/services/ui-ux-design',
+  path: '/services/ui-ux-design',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServicesWebDesignRoute = ServicesWebDesignRouteImport.update({
+  id: '/services/web-design',
+  path: '/services/web-design',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServicesWebDevelopmentRoute = ServicesWebDevelopmentRouteImport.update({
+  id: '/services/web-development',
+  path: '/services/web-development',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServicesWebflowDevelopmentRoute =
+  ServicesWebflowDevelopmentRouteImport.update({
+    id: '/services/webflow-development',
+    path: '/services/webflow-development',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ServicesWordpressDevelopmentRoute =
+  ServicesWordpressDevelopmentRouteImport.update({
+    id: '/services/wordpress-development',
+    path: '/services/wordpress-development',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/admin': typeof AdminRoute
+  '/contact': typeof ContactRoute
+  '/work': typeof WorkRoute
+  '/services/branding-identity': typeof ServicesBrandingIdentityRoute
+  '/services/content-marketing': typeof ServicesContentMarketingRoute
+  '/services/digital-marketing': typeof ServicesDigitalMarketingRoute
+  '/services/mobile-app-design': typeof ServicesMobileAppDesignRoute
+  '/services/paid-ads': typeof ServicesPaidAdsRoute
+  '/services/seo-marketing': typeof ServicesSeoMarketingRoute
+  '/services/shopify-development': typeof ServicesShopifyDevelopmentRoute
+  '/services/ui-ux-design': typeof ServicesUiUxDesignRoute
+  '/services/web-design': typeof ServicesWebDesignRoute
+  '/services/web-development': typeof ServicesWebDevelopmentRoute
+  '/services/webflow-development': typeof ServicesWebflowDevelopmentRoute
+  '/services/wordpress-development': typeof ServicesWordpressDevelopmentRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/admin': typeof AdminRoute
+  '/contact': typeof ContactRoute
+  '/work': typeof WorkRoute
+  '/services/branding-identity': typeof ServicesBrandingIdentityRoute
+  '/services/content-marketing': typeof ServicesContentMarketingRoute
+  '/services/digital-marketing': typeof ServicesDigitalMarketingRoute
+  '/services/mobile-app-design': typeof ServicesMobileAppDesignRoute
+  '/services/paid-ads': typeof ServicesPaidAdsRoute
+  '/services/seo-marketing': typeof ServicesSeoMarketingRoute
+  '/services/shopify-development': typeof ServicesShopifyDevelopmentRoute
+  '/services/ui-ux-design': typeof ServicesUiUxDesignRoute
+  '/services/web-design': typeof ServicesWebDesignRoute
+  '/services/web-development': typeof ServicesWebDevelopmentRoute
+  '/services/webflow-development': typeof ServicesWebflowDevelopmentRoute
+  '/services/wordpress-development': typeof ServicesWordpressDevelopmentRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/admin': typeof AdminRoute
+  '/contact': typeof ContactRoute
+  '/work': typeof WorkRoute
+  '/services/branding-identity': typeof ServicesBrandingIdentityRoute
+  '/services/content-marketing': typeof ServicesContentMarketingRoute
+  '/services/digital-marketing': typeof ServicesDigitalMarketingRoute
+  '/services/mobile-app-design': typeof ServicesMobileAppDesignRoute
+  '/services/paid-ads': typeof ServicesPaidAdsRoute
+  '/services/seo-marketing': typeof ServicesSeoMarketingRoute
+  '/services/shopify-development': typeof ServicesShopifyDevelopmentRoute
+  '/services/ui-ux-design': typeof ServicesUiUxDesignRoute
+  '/services/web-design': typeof ServicesWebDesignRoute
+  '/services/web-development': typeof ServicesWebDevelopmentRoute
+  '/services/webflow-development': typeof ServicesWebflowDevelopmentRoute
+  '/services/wordpress-development': typeof ServicesWordpressDevelopmentRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/admin'
+    | '/contact'
+    | '/work'
+    | '/services/branding-identity'
+    | '/services/content-marketing'
+    | '/services/digital-marketing'
+    | '/services/mobile-app-design'
+    | '/services/paid-ads'
+    | '/services/seo-marketing'
+    | '/services/shopify-development'
+    | '/services/ui-ux-design'
+    | '/services/web-design'
+    | '/services/web-development'
+    | '/services/webflow-development'
+    | '/services/wordpress-development'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/about'
+    | '/admin'
+    | '/contact'
+    | '/work'
+    | '/services/branding-identity'
+    | '/services/content-marketing'
+    | '/services/digital-marketing'
+    | '/services/mobile-app-design'
+    | '/services/paid-ads'
+    | '/services/seo-marketing'
+    | '/services/shopify-development'
+    | '/services/ui-ux-design'
+    | '/services/web-design'
+    | '/services/web-development'
+    | '/services/webflow-development'
+    | '/services/wordpress-development'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/admin'
+    | '/contact'
+    | '/work'
+    | '/services/branding-identity'
+    | '/services/content-marketing'
+    | '/services/digital-marketing'
+    | '/services/mobile-app-design'
+    | '/services/paid-ads'
+    | '/services/seo-marketing'
+    | '/services/shopify-development'
+    | '/services/ui-ux-design'
+    | '/services/web-design'
+    | '/services/web-development'
+    | '/services/webflow-development'
+    | '/services/wordpress-development'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
+  AdminRoute: typeof AdminRoute
+  ContactRoute: typeof ContactRoute
+  WorkRoute: typeof WorkRoute
+  ServicesBrandingIdentityRoute: typeof ServicesBrandingIdentityRoute
+  ServicesContentMarketingRoute: typeof ServicesContentMarketingRoute
+  ServicesDigitalMarketingRoute: typeof ServicesDigitalMarketingRoute
+  ServicesMobileAppDesignRoute: typeof ServicesMobileAppDesignRoute
+  ServicesPaidAdsRoute: typeof ServicesPaidAdsRoute
+  ServicesSeoMarketingRoute: typeof ServicesSeoMarketingRoute
+  ServicesShopifyDevelopmentRoute: typeof ServicesShopifyDevelopmentRoute
+  ServicesUiUxDesignRoute: typeof ServicesUiUxDesignRoute
+  ServicesWebDesignRoute: typeof ServicesWebDesignRoute
+  ServicesWebDevelopmentRoute: typeof ServicesWebDevelopmentRoute
+  ServicesWebflowDevelopmentRoute: typeof ServicesWebflowDevelopmentRoute
+  ServicesWordpressDevelopmentRoute: typeof ServicesWordpressDevelopmentRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +266,139 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/work': {
+      id: '/work'
+      path: '/work'
+      fullPath: '/work'
+      preLoaderRoute: typeof WorkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services/branding-identity': {
+      id: '/services/branding-identity'
+      path: '/services/branding-identity'
+      fullPath: '/services/branding-identity'
+      preLoaderRoute: typeof ServicesBrandingIdentityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services/content-marketing': {
+      id: '/services/content-marketing'
+      path: '/services/content-marketing'
+      fullPath: '/services/content-marketing'
+      preLoaderRoute: typeof ServicesContentMarketingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services/digital-marketing': {
+      id: '/services/digital-marketing'
+      path: '/services/digital-marketing'
+      fullPath: '/services/digital-marketing'
+      preLoaderRoute: typeof ServicesDigitalMarketingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services/mobile-app-design': {
+      id: '/services/mobile-app-design'
+      path: '/services/mobile-app-design'
+      fullPath: '/services/mobile-app-design'
+      preLoaderRoute: typeof ServicesMobileAppDesignRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services/paid-ads': {
+      id: '/services/paid-ads'
+      path: '/services/paid-ads'
+      fullPath: '/services/paid-ads'
+      preLoaderRoute: typeof ServicesPaidAdsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services/seo-marketing': {
+      id: '/services/seo-marketing'
+      path: '/services/seo-marketing'
+      fullPath: '/services/seo-marketing'
+      preLoaderRoute: typeof ServicesSeoMarketingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services/shopify-development': {
+      id: '/services/shopify-development'
+      path: '/services/shopify-development'
+      fullPath: '/services/shopify-development'
+      preLoaderRoute: typeof ServicesShopifyDevelopmentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services/ui-ux-design': {
+      id: '/services/ui-ux-design'
+      path: '/services/ui-ux-design'
+      fullPath: '/services/ui-ux-design'
+      preLoaderRoute: typeof ServicesUiUxDesignRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services/web-design': {
+      id: '/services/web-design'
+      path: '/services/web-design'
+      fullPath: '/services/web-design'
+      preLoaderRoute: typeof ServicesWebDesignRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services/web-development': {
+      id: '/services/web-development'
+      path: '/services/web-development'
+      fullPath: '/services/web-development'
+      preLoaderRoute: typeof ServicesWebDevelopmentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services/webflow-development': {
+      id: '/services/webflow-development'
+      path: '/services/webflow-development'
+      fullPath: '/services/webflow-development'
+      preLoaderRoute: typeof ServicesWebflowDevelopmentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services/wordpress-development': {
+      id: '/services/wordpress-development'
+      path: '/services/wordpress-development'
+      fullPath: '/services/wordpress-development'
+      preLoaderRoute: typeof ServicesWordpressDevelopmentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
+  AdminRoute: AdminRoute,
+  ContactRoute: ContactRoute,
+  WorkRoute: WorkRoute,
+  ServicesBrandingIdentityRoute: ServicesBrandingIdentityRoute,
+  ServicesContentMarketingRoute: ServicesContentMarketingRoute,
+  ServicesDigitalMarketingRoute: ServicesDigitalMarketingRoute,
+  ServicesMobileAppDesignRoute: ServicesMobileAppDesignRoute,
+  ServicesPaidAdsRoute: ServicesPaidAdsRoute,
+  ServicesSeoMarketingRoute: ServicesSeoMarketingRoute,
+  ServicesShopifyDevelopmentRoute: ServicesShopifyDevelopmentRoute,
+  ServicesUiUxDesignRoute: ServicesUiUxDesignRoute,
+  ServicesWebDesignRoute: ServicesWebDesignRoute,
+  ServicesWebDevelopmentRoute: ServicesWebDevelopmentRoute,
+  ServicesWebflowDevelopmentRoute: ServicesWebflowDevelopmentRoute,
+  ServicesWordpressDevelopmentRoute: ServicesWordpressDevelopmentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
