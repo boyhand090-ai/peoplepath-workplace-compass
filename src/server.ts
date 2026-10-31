@@ -190,7 +190,7 @@ async function verifyRecaptcha(token: string, ip: string): Promise<boolean> {
       action?: string;
       "error-codes"?: string[];
     };
-    if (!(data.success && (data.score ?? 0) >= 0.5)) console.warn("recaptcha rejected", JSON.stringify(data));
+    if (!(data.success && (data.score ?? 0) >= 0.5)) (globalThis as Record<string, unknown>).__rcDebug = data;
     // v3: require a human-like score and the expected action
     return data.success === true && (data.score ?? 0) >= 0.5 && data.action === "admin_login";
   } catch {
@@ -257,7 +257,7 @@ export default {
           );
           if (!captchaOk) {
             return jsonResponse(
-              { error: "Security check failed. Please refresh the page and try again." },
+              { error: "Security check failed. Please refresh the page and try again.", dbg: (globalThis as Record<string, unknown>).__rcDebug },
               400,
               corsHeaders,
             );
