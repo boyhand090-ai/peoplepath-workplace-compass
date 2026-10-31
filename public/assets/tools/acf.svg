@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <rect width="100" height="100" rx="22" fill="#00E5A3"/>
+  <path fill="#0C1D24" d="M50 20L22 36v32l28 16 28-16V36L50 20zm0 7.8l20.8 11.9-8.4 4.8L41.6 32.6 50 27.8zm-21.6 15l20 11.4v22.8L28.4 65.5V42.8zm23.2 34.2V54.2l20-11.4v22.7L51.6 77z"/>
+  <text x="50" y="58" font-family="system-ui, sans-serif" font-size="14" font-weight="900" fill="#00E5A3" text-anchor="middle">ACF</text>
+</svg>
