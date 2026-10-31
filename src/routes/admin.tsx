@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect, useMemo, useCallback, useRef, type FormEvent } from "react";
+import { useState, useEffect, useMemo, useCallback, type FormEvent } from "react";
 import {
   Lock,
   User,
@@ -51,7 +51,7 @@ import {
   type ClientInquiry,
 } from "@/lib/inbox";
 import { cn } from "@/lib/utils";
-import { Recaptcha, type RecaptchaHandle } from "@/components/admin/recaptcha";
+import { getRecaptchaToken, preloadRecaptcha } from "@/components/admin/recaptcha";
 import { filterAndSortInquiries } from "@/lib/inquiry-filters";
 
 const title = "Client Inquiries Admin Portal — six2eight";
@@ -77,8 +77,9 @@ function AdminPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [recaptchaToken, setRecaptchaToken] = useState("");
-  const recaptchaRef = useRef<RecaptchaHandle>(null);
+  useEffect(() => {
+    if (!isAuthenticated) preloadRecaptcha();
+  }, [isAuthenticated]);
 
   // Inquiries data state
   const [inquiries, setInquiries] = useState<ClientInquiry[]>([]);
@@ -163,13 +164,18 @@ function AdminPage() {
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoginError("");
-    if (!recaptchaToken) {
-      setLoginError("Please tick \"I'm not a robot\" before signing in.");
-      return;
-    }
     setIsLoggingIn(true);
 
     try {
+      let recaptchaToken = "";
+      try {
+        recaptchaToken = await getRecaptchaToken("admin_login");
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Security check failed to load.";
+        setLoginError(msg);
+        toast.error(msg);
+        return;
+      }
       const result = await authenticateAdmin(usernameInput, passwordInput, recaptchaToken);
       if (result.success) {
         setIsAuthenticated(true);
@@ -186,8 +192,6 @@ function AdminPage() {
       toast.error("Authentication failed.");
     } finally {
       setIsLoggingIn(false);
-      setRecaptchaToken("");
-      recaptchaRef.current?.reset();
     }
   };
 
@@ -422,9 +426,13 @@ function AdminPage() {
               </div>
             </div>
 
-            <div className="flex justify-center pt-1">
-              <Recaptcha ref={recaptchaRef} onChange={setRecaptchaToken} />
-            </div>
+            <p className="text-center text-[10px] leading-relaxed text-neutral-500">
+              Protected by reCAPTCHA. Google{" "}
+              <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer" className="underline">Privacy</a>{" "}
+              &amp;{" "}
+              <a href="https://policies.google.com/terms" target="_blank" rel="noreferrer" className="underline">Terms</a>{" "}
+              apply.
+            </p>
 
             <button
               type="submit"

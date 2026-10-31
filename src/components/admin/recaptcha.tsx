@@ -1,9 +1,7 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
-
+// Google reCAPTCHA v3 (invisible, score-based). Token is fetched on submit.
 type Grecaptcha = {
-  render: (el: HTMLElement, opts: Record<string, unknown>) => number;
-  reset: (id?: number) => void;
   ready: (cb: () => void) => void;
+  execute: (siteKey: string, opts: { action: string }) => Promise<string>;
 };
 
 declare global {
@@ -12,66 +10,37 @@ declare global {
   }
 }
 
-export type RecaptchaHandle = { reset: () => void };
+let loadPromise: Promise<string> | null = null;
 
-let scriptPromise: Promise<void> | null = null;
-function loadScript(): Promise<void> {
-  if (scriptPromise) return scriptPromise;
-  scriptPromise = new Promise((resolve, reject) => {
-    const s = document.createElement("script");
-    s.src = "https://www.google.com/recaptcha/api.js?render=explicit";
-    s.async = true;
-    s.defer = true;
-    s.onload = () => window.grecaptcha!.ready(() => resolve());
-    s.onerror = () => reject(new Error("reCAPTCHA failed to load"));
-    document.head.appendChild(s);
+function loadRecaptcha(): Promise<string> {
+  if (loadPromise) return loadPromise;
+  loadPromise = (async () => {
+    const res = await fetch("/api/admin/recaptcha-config");
+    const { siteKey } = (await res.json()) as { siteKey?: string };
+    if (!siteKey) throw new Error("reCAPTCHA is not configured yet.");
+    await new Promise<void>((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = `https://www.google.com/recaptcha/api.js?render=${encodeURIComponent(siteKey)}`;
+      s.async = true;
+      s.onload = () => window.grecaptcha!.ready(() => resolve());
+      s.onerror = () => reject(new Error("reCAPTCHA failed to load."));
+      document.head.appendChild(s);
+    });
+    return siteKey;
+  })();
+  loadPromise.catch(() => {
+    loadPromise = null;
   });
-  return scriptPromise;
+  return loadPromise;
 }
 
-export const Recaptcha = forwardRef<RecaptchaHandle, { onChange: (token: string) => void }>(
-  function Recaptcha({ onChange }, ref) {
-    const box = useRef<HTMLDivElement>(null);
-    const widgetId = useRef<number | null>(null);
-    const [error, setError] = useState("");
+/** Start loading early (e.g. when the sign-in page opens). */
+export function preloadRecaptcha() {
+  void loadRecaptcha().catch(() => {});
+}
 
-    useImperativeHandle(ref, () => ({
-      reset: () => {
-        if (widgetId.current !== null) window.grecaptcha?.reset(widgetId.current);
-      },
-    }));
-
-    useEffect(() => {
-      let cancelled = false;
-      (async () => {
-        try {
-          const res = await fetch("/api/admin/recaptcha-config");
-          const { siteKey } = (await res.json()) as { siteKey?: string };
-          if (!siteKey) throw new Error("reCAPTCHA is not configured yet.");
-          await loadScript();
-          if (cancelled || !box.current || widgetId.current !== null) return;
-          widgetId.current = window.grecaptcha!.render(box.current, {
-            sitekey: siteKey,
-            theme: "dark",
-            callback: (t: string) => onChange(t),
-            "expired-callback": () => onChange(""),
-            "error-callback": () => onChange(""),
-          });
-        } catch (e) {
-          if (!cancelled) setError(e instanceof Error ? e.message : "reCAPTCHA unavailable.");
-        }
-      })();
-      return () => {
-        cancelled = true;
-      };
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    return (
-      <div>
-        <div ref={box} />
-        {error && <p className="text-xs text-destructive">{error}</p>}
-      </div>
-    );
-  },
-);
+/** Get a fresh token for the given action. */
+export async function getRecaptchaToken(action: string): Promise<string> {
+  const siteKey = await loadRecaptcha();
+  return window.grecaptcha!.execute(siteKey, { action });
+}
