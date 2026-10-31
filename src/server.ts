@@ -71,17 +71,73 @@ const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "sixtoeight@talha";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "madebyAI";
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
 
-// Active in-memory admin sessions
 type AdminSession = {
   token: string;
   username: string;
   expiresAt: number;
 };
-const adminSessions = new Map<string, AdminSession>();
 
-// In-memory client inquiries store (max 500 recent records to prevent heap exhaustion)
-const MAX_STORED_INQUIRIES = 500;
-const liveServerInquiries: LiveInquiryRecord[] = [];
+// Persistent storage (Lovable Cloud). Loaded lazily so it never enters the client bundle.
+async function db() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin;
+}
+
+async function hashToken(token: string): Promise<string> {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
+  return Array.from(new Uint8Array(buf), (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+type InquiryRow = {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string | null;
+  company: string | null;
+  website: string | null;
+  services: string[];
+  budget: string | null;
+  timeline: string | null;
+  message: string | null;
+  hear_about: string | null;
+  source: string;
+  status: string;
+  notes: string | null;
+  created_at: string;
+};
+
+function rowToRecord(r: InquiryRow): LiveInquiryRecord {
+  return {
+    id: r.id,
+    fullName: r.full_name,
+    email: r.email,
+    phone: r.phone ?? undefined,
+    company: r.company ?? undefined,
+    website: r.website ?? undefined,
+    services: r.services,
+    budget: r.budget ?? undefined,
+    timeline: r.timeline ?? undefined,
+    message: r.message ?? undefined,
+    hearAbout: r.hear_about ?? undefined,
+    source: r.source,
+    createdAt: r.created_at,
+    status: (["new", "contacted", "archived"].includes(r.status) ? r.status : "new") as
+      | "new"
+      | "contacted"
+      | "archived",
+    notes: r.notes ?? undefined,
+  };
+}
+
+async function listInquiries(): Promise<LiveInquiryRecord[]> {
+  const { data, error } = await (await db())
+    .from("inquiries")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(1000);
+  if (error) throw error;
+  return (data as InquiryRow[]).map(rowToRecord);
+}
 
 // Rate limiter: Failed login attempts per IP
 type LoginAttemptRecord = { count: number; lockedUntil: number };
@@ -128,21 +184,23 @@ function sanitizeInput(val: unknown, maxLen = 1000): string {
 /**
  * Verify administrator session token from Authorization: Bearer <token>
  */
-function verifyAdminToken(request: Request): { valid: boolean; username?: string } {
+async function verifyAdminToken(request: Request): Promise<{ valid: boolean; username?: string }> {
   const authHeader = request.headers.get("authorization") || "";
   const match = authHeader.match(/^Bearer\s+(.+)$/i);
   if (!match) return { valid: false };
-
-  const token = match[1]!.trim();
-  const session = adminSessions.get(token);
-  if (!session) return { valid: false };
-
-  if (Date.now() > session.expiresAt) {
-    adminSessions.delete(token);
+  const hash = await hashToken(match[1]!.trim());
+  const client = await db();
+  const { data } = await client
+    .from("admin_sessions")
+    .select("username, expires_at")
+    .eq("token_hash", hash)
+    .maybeSingle();
+  if (!data) return { valid: false };
+  if (Date.now() > new Date(data.expires_at).getTime()) {
+    await client.from("admin_sessions").delete().eq("token_hash", hash);
     return { valid: false };
   }
-
-  return { valid: true, username: session.username };
+  return { valid: true, username: data.username };
 }
 
 /**
@@ -222,7 +280,7 @@ export default {
 
       // Check current session validity
       if (request.method === "GET") {
-        const { valid, username } = verifyAdminToken(request);
+        const { valid, username } = await verifyAdminToken(request);
         if (!valid) {
           return jsonResponse({ authenticated: false }, 401, corsHeaders);
         }
@@ -284,7 +342,11 @@ export default {
               username: userStr,
               expiresAt: now + SESSION_TTL_MS,
             };
-            adminSessions.set(token, session);
+            await (await db()).from("admin_sessions").insert({
+              token_hash: await hashToken(token),
+              username: userStr,
+              expires_at: new Date(session.expiresAt).toISOString(),
+            });
 
             return jsonResponse(
               {
@@ -319,7 +381,10 @@ export default {
         const authHeader = request.headers.get("authorization") || "";
         const match = authHeader.match(/^Bearer\s+(.+)$/i);
         if (match) {
-          adminSessions.delete(match[1]!.trim());
+          await (await db())
+            .from("admin_sessions")
+            .delete()
+            .eq("token_hash", await hashToken(match[1]!.trim()));
         }
         return jsonResponse({ success: true, message: "Logged out." }, 200, corsHeaders);
       }
@@ -332,7 +397,7 @@ export default {
       if (request.method !== "POST") {
         return jsonResponse({ error: "Method not allowed" }, 405);
       }
-      const auth = verifyAdminToken(request);
+      const auth = await verifyAdminToken(request);
       if (!auth.valid) {
         return jsonResponse(
           { error: "Unauthorized: please log in to the admin portal again." },
@@ -415,7 +480,7 @@ export default {
 
       // 1. GET: Read all inquiries (STRICTLY ADMIN ONLY)
       if (request.method === "GET") {
-        const { valid } = verifyAdminToken(request);
+        const { valid } = await verifyAdminToken(request);
         if (!valid) {
           return jsonResponse(
             {
@@ -426,7 +491,7 @@ export default {
             corsHeaders,
           );
         }
-        return jsonResponse(liveServerInquiries, 200, corsHeaders);
+        return jsonResponse(await listInquiries(), 200, corsHeaders);
       }
 
       // 2. POST: Submit inquiry from contact form (PUBLIC with rate limiting & sanitization)
@@ -496,9 +561,24 @@ export default {
           };
 
           // Store in server list (enforce maximum capacity to prevent memory bloat)
-          liveServerInquiries.unshift(cleanRecord);
-          if (liveServerInquiries.length > MAX_STORED_INQUIRIES) {
-            liveServerInquiries.pop();
+          const { error: insertError } = await (await db()).from("inquiries").upsert({
+            id: cleanRecord.id,
+            full_name: cleanRecord.fullName,
+            email: cleanRecord.email,
+            phone: cleanRecord.phone ?? null,
+            company: cleanRecord.company ?? null,
+            website: cleanRecord.website ?? null,
+            services: (cleanRecord.services as string[]) ?? [],
+            budget: (cleanRecord.budget as string) ?? null,
+            timeline: cleanRecord.timeline ?? null,
+            message: cleanRecord.message ?? null,
+            hear_about: cleanRecord.hearAbout ?? null,
+            source: cleanRecord.source,
+            status: "new",
+          }, { onConflict: "id", ignoreDuplicates: true });
+          if (insertError) {
+            console.error("Inquiry insert failed", insertError.message);
+            return jsonResponse({ error: "Could not save your message." }, 500, corsHeaders);
           }
 
           return jsonResponse(cleanRecord, 201, corsHeaders);
@@ -509,7 +589,7 @@ export default {
 
       // 3. PATCH: Update inquiry status (STRICTLY ADMIN ONLY)
       if (request.method === "PATCH") {
-        const { valid } = verifyAdminToken(request);
+        const { valid } = await verifyAdminToken(request);
         if (!valid) {
           return jsonResponse(
             { error: "Unauthorized: Administrator token required to modify client records." },
@@ -519,26 +599,19 @@ export default {
         }
 
         try {
-          const body = (await request.json()) as { id?: string; status?: string };
+          const body = (await request.json()) as { id?: string; status?: string; notes?: string };
           if (!body.id) {
             return jsonResponse({ error: "Missing inquiry ID." }, 400, corsHeaders);
           }
-
-          const targetIndex = liveServerInquiries.findIndex((i) => i.id === body.id);
-          if (targetIndex !== -1) {
-            const allowedStatuses = ["new", "contacted", "archived"];
-            const newStatus =
-              body.status && allowedStatuses.includes(body.status)
-                ? (body.status as "new" | "contacted" | "archived")
-                : liveServerInquiries[targetIndex]!.status;
-
-            liveServerInquiries[targetIndex] = {
-              ...liveServerInquiries[targetIndex]!,
-              status: newStatus,
-            };
+          const patch: { status?: string; notes?: string } = {};
+          if (body.status && ["new", "contacted", "archived"].includes(body.status)) {
+            patch.status = body.status;
           }
-
-          return jsonResponse(liveServerInquiries, 200, corsHeaders);
+          if (typeof body.notes === "string") patch.notes = body.notes.slice(0, 5000);
+          if (Object.keys(patch).length) {
+            await (await db()).from("inquiries").update(patch).eq("id", body.id);
+          }
+          return jsonResponse(await listInquiries(), 200, corsHeaders);
         } catch {
           return jsonResponse({ error: "Invalid payload." }, 400, corsHeaders);
         }
@@ -546,7 +619,7 @@ export default {
 
       // 4. DELETE: Remove inquiry (STRICTLY ADMIN ONLY)
       if (request.method === "DELETE") {
-        const { valid } = verifyAdminToken(request);
+        const { valid } = await verifyAdminToken(request);
         if (!valid) {
           return jsonResponse(
             { error: "Unauthorized: Administrator token required to delete client records." },
@@ -561,12 +634,8 @@ export default {
             return jsonResponse({ error: "Missing inquiry ID." }, 400, corsHeaders);
           }
 
-          const index = liveServerInquiries.findIndex((i) => i.id === body.id);
-          if (index !== -1) {
-            liveServerInquiries.splice(index, 1);
-          }
-
-          return jsonResponse(liveServerInquiries, 200, corsHeaders);
+          await (await db()).from("inquiries").delete().eq("id", body.id);
+          return jsonResponse(await listInquiries(), 200, corsHeaders);
         } catch {
           return jsonResponse({ error: "Invalid payload." }, 400, corsHeaders);
         }
