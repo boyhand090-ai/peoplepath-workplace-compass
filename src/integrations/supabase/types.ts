@@ -14,7 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      admin_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          token_hash: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          token_hash: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          token_hash?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      inquiries: {
+        Row: {
+          budget: string | null
+          company: string | null
+          created_at: string
+          email: string
+          full_name: string
+          hear_about: string | null
+          id: string
+          message: string | null
+          notes: string | null
+          phone: string | null
+          services: string[]
+          source: string
+          status: string
+          timeline: string | null
+          website: string | null
+        }
+        Insert: {
+          budget?: string | null
+          company?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          hear_about?: string | null
+          id: string
+          message?: string | null
+          notes?: string | null
+          phone?: string | null
+          services?: string[]
+          source?: string
+          status?: string
+          timeline?: string | null
+          website?: string | null
+        }
+        Update: {
+          budget?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          hear_about?: string | null
+          id?: string
+          message?: string | null
+          notes?: string | null
+          phone?: string | null
+          services?: string[]
+          source?: string
+          status?: string
+          timeline?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
