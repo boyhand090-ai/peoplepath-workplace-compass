@@ -52,6 +52,7 @@ import {
 } from "@/lib/inbox";
 import { cn } from "@/lib/utils";
 import { getRecaptchaToken, preloadRecaptcha } from "@/components/admin/recaptcha";
+import { RecaptchaHelp } from "@/components/admin/recaptcha-help";
 import { filterAndSortInquiries } from "@/lib/inquiry-filters";
 
 const title = "Client Inquiries Admin Portal — six2eight";
@@ -77,6 +78,7 @@ function AdminPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [captchaProblem, setCaptchaProblem] = useState(false);
   useEffect(() => {
     if (!isAuthenticated) preloadRecaptcha();
   }, [isAuthenticated]);
@@ -164,6 +166,7 @@ function AdminPage() {
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoginError("");
+    setCaptchaProblem(false);
     setIsLoggingIn(true);
 
     try {
@@ -173,6 +176,7 @@ function AdminPage() {
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Security check failed to load.";
         setLoginError(msg);
+        setCaptchaProblem(true);
         toast.error(msg);
         return;
       }
@@ -184,6 +188,7 @@ function AdminPage() {
       } else {
         const errorMsg = result.error || "Invalid username or password. Please verify credentials.";
         setLoginError(errorMsg);
+        if (result.code === "recaptcha_failed") setCaptchaProblem(true);
         toast.error(errorMsg);
       }
     } catch (err) {
@@ -380,6 +385,7 @@ function AdminPage() {
                 {loginError}
               </div>
             )}
+            {captchaProblem && <RecaptchaHelp />}
 
             <div>
               <label className="block text-xs font-semibold text-neutral-300 mb-1.5">

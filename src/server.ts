@@ -313,7 +313,7 @@ export default {
           );
           if (!captchaOk) {
             return jsonResponse(
-              { error: "Security check failed. Please refresh the page and try again." },
+              { error: "Security check failed. Please refresh the page and try again.", code: "recaptcha_failed" },
               400,
               corsHeaders,
             );
