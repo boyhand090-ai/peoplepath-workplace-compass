@@ -9,3 +9,4 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 - Admin sign-in is protected by Google reCAPTCHA v3, verified server-side in src/server.ts (keys in RECAPTCHA_SITE_KEY / RECAPTCHA_SECRET_KEY); never add a client-only bypass.
+- Contact inquiries and admin sessions are stored in Lovable Cloud tables (inquiries, admin_sessions; session tokens stored as SHA-256 hashes) and accessed only from src/server.ts with the service-role client; RLS on with no public policies so browsers can never read them directly.

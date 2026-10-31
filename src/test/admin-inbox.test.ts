@@ -96,19 +96,22 @@ describe("saving notes and status", () => {
     expect(stored.find((i) => i.id === "B")?.status).toBe("contacted");
   });
 
-  it("keeps local notes and status when server data refreshes", async () => {
+  it("uses the saved server notes and status when data refreshes", async () => {
     sessionStorage.setItem("six2eight_admin_auth_token", "t");
     const inbox = await import("@/lib/inbox");
-    inbox.updateInquiryNotes("A", "VIP");
-    await inbox.updateInquiryStatus("A", "archived");
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () => new Response(JSON.stringify([{ ...A, status: "new" }]), { status: 200 })),
+      vi.fn(
+        async () =>
+          new Response(JSON.stringify([{ ...A, status: "contacted", notes: "VIP" }]), {
+            status: 200,
+          }),
+      ),
     );
     const merged = await inbox.fetchServerInquiries("t");
     const a = merged.find((i) => i.id === "A");
     expect(a?.notes).toBe("VIP");
-    expect(a?.status).toBe("archived");
+    expect(a?.status).toBe("contacted");
     vi.unstubAllGlobals();
   });
 });
