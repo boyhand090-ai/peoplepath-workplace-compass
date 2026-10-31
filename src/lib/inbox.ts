@@ -85,7 +85,6 @@ export async function authenticateAdmin(
     return { success: false, error: "Could not reach the server. Please try again." };
   }
 }
-}
 
 /**
  * Sign out of admin session
